@@ -1,0 +1,329 @@
+/**
+ * Author: Luke Whipple and Colton Johnson and David Dubchakov
+ *         lwhipple9@huskers.unl.edu and cjohnson184@huskers.unl.edu and ddubchakov2@huskers.unl.edu
+ * Date: 2020/10/30
+ *
+ * Purpose: This program encapsulates airport information to model an airport record from the ICAO database.
+ */
+#include <stdlib.h>
+
+#include <stdio.h>
+
+#include <string.h>
+
+#include <math.h>
+
+#include "airport.h"
+
+
+char * deepStringCopy(const char * s) {
+    if (s == NULL) {
+
+    }
+    char * c = (char * ) malloc((strlen(s) + 1) * sizeof(char));
+    strcpy(c, s);
+    return c;
+}
+
+Airport * createAirport(const char * gpsId,
+                        const char * type,
+                        const char * name,
+                        double latitude,
+                        double longitude,
+                        int elevationFeet,
+                        const char * city,
+                        const char * countryAbbrv) {
+    Airport * airport = (Airport * ) malloc(sizeof(Airport) * 1);
+    initAirport(airport, gpsId, type, name, latitude, longitude, elevationFeet, city, countryAbbrv);
+    return airport;
+
+}
+
+void initAirport(Airport * airport,
+                 const char * gpsId,
+                 const char * type,
+                 const char * name,
+                 double latitude,
+                 double longitude,
+                 int elevationFeet,
+                 const char * city,
+                 const char * countryAbbrv) {
+    airport -> gpsId = deepStringCopy(gpsId);
+    airport -> type = deepStringCopy(type);
+    airport -> name = deepStringCopy(name);
+    airport -> latitude = latitude;
+    airport -> longitude = longitude;
+    airport -> elevationFeet = elevationFeet;
+    airport -> city = deepStringCopy(city);
+    airport -> countryAbbrv = deepStringCopy(countryAbbrv);
+    return;
+}
+
+char * airportToString(const Airport * airport) {
+    char temp[9999];
+    sprintf(temp, "%s%s%s%f%f%d%s%s", airport -> gpsId, airport -> type, airport -> name, airport -> latitude,
+            airport -> longitude, airport -> elevationFeet, airport -> city, airport -> countryAbbrv);
+    return deepStringCopy(temp);
+}
+
+double getAirDistance(const Airport * origin,
+                      const Airport * destination) {
+    double EarthRadius = 6371.0;
+    double latOrg = origin -> latitude;
+    double longOrg = origin -> longitude;
+
+    double latDest = destination -> latitude;
+    double longDest = destination -> longitude;
+
+    longOrg = (longOrg / 180) * M_PI;
+    latOrg = (latOrg / 180) * M_PI;
+
+    longDest = (longDest / 180) * M_PI;
+    latDest = (latDest / 180) * M_PI;
+
+    return (acos((sin(latOrg) * sin(latDest)) +
+                 cos(latOrg) * cos(latDest) * cos(longOrg - longDest)) * (EarthRadius));
+
+}
+double getAirDistanceLincoln(const Airport * destination) {
+    double EarthRadius = 6371.0;
+    double latOrg = 40.846176;
+    double longOrg = -96.75471;
+
+    double latDest = destination -> latitude;
+    double longDest = destination -> longitude;
+
+    longOrg = (longOrg / 180) * M_PI;
+    latOrg = (latOrg / 180) * M_PI;
+
+    longDest = (longDest / 180) * M_PI;
+    latDest = (latDest / 180) * M_PI;
+
+    return (acos((sin(latOrg) * sin(latDest)) +
+                 cos(latOrg) * cos(latDest) * cos(longOrg - longDest)) * (EarthRadius));
+
+}
+
+double getEstimatedTravelTime(const Airport * stops,
+                              int size,
+                              double aveKmsPerHour,
+                              double aveLayoverTimeHrs) {
+    if (stops == NULL || size <= 1 || aveKmsPerHour <= 0 || aveLayoverTimeHrs < 0) {
+        return 0;
+    }
+    double currDist = 0;
+    double currHours = 0;
+    double totHours = 0;
+    for (int i = 0; i < size - 1; i++) {
+        currDist = getAirDistance( & stops[i], & stops[i + 1]);
+        currHours = currDist / aveKmsPerHour;
+        totHours += currHours;
+        if (i != 0) {
+            totHours += aveLayoverTimeHrs;
+        }
+
+    }
+    return (totHours);
+
+}
+void printAirports(const Airport *airports, int n) {
+
+    printf("Airports\n");
+    printf("=========================\n");
+    for(int i=0; i<n; i++) {
+        printf("GPS-ID:%-7s Type:%-15s Name:%-35s Lat:%-10f Long:%-11f Elevation:%-4d City:%-12s Country:%s\n",
+
+               airports[i].gpsId,
+               airports[i].type,    //gpsId, type, name, latitude, longitude, elevationFeet, city, countryAbbrv
+               airports[i].name,
+               airports[i].latitude,
+               airports[i].longitude,
+               airports[i].elevationFeet,
+               airports[i].city,
+               airports[i].countryAbbrv
+              );
+
+    }
+    printf("\n\n");
+}
+void printOneAirport(const Airport *airports, int i) {
+    printf("Airport\n");
+    printf("=========================\n");
+    printf("GPS-ID:%s Type:%s Name:%s Lat:%f Long:%f Elevation:%d City:%s Country:%s\n",
+           airports[i].gpsId,
+           airports[i].type,    //gpsId, type, name, latitude, longitude, elevationFeet, city, countryAbbrv
+           airports[i].name,
+           airports[i].latitude,
+           airports[i].longitude,
+           airports[i].elevationFeet,
+           airports[i].city,
+           airports[i].countryAbbrv
+          );
+    printf("\n\n");
+}
+
+
+
+
+
+//    comparators
+
+int cmpByName(const void* a, const void* b) {
+    const Airport *x = (const Airport *) a;
+    const Airport *y = (const Airport *) b;
+    int result = strcmp(x->name, y->name);
+
+    return result;
+}
+
+int cmpByNameDesc(const void* a, const void* b) {
+    return (cmpByName(b, a));
+
+}
+
+int cmpByCountryCity(const void* a, const void* b) {
+    const Airport *x = (const Airport *) a;
+    const Airport *y = (const Airport *) b;
+    int result = strcmp(x->countryAbbrv, y->countryAbbrv);
+    if(result == 0) {
+        result = strcmp(x->city, y->city);
+    }
+    return result;
+}
+
+
+int cmpByGPSId(const void* a, const void* b) {
+    const Airport *x = (const Airport *) a;
+    const Airport *y = (const Airport *) b;
+    int result = strcmp(x->gpsId, y->gpsId);
+
+    return result;
+}
+
+
+
+
+int cmpByLincolnDistance(const void* a, const void* b) {
+    const Airport *x = (const Airport *) a;
+    const Airport *y = (const Airport *) b;   //40.846176, -96.75471
+    int distance1 = getAirDistanceLincoln(x);
+    int distance2 = getAirDistanceLincoln(y);
+
+    if(distance1 < distance2) {
+        return -1;
+    }
+    else if(distance1 > distance2) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+
+}
+
+
+int cmpByLatitude(const void* a, const void* b) {
+    const Airport *lat1 = (const Airport *) a;
+    const Airport *lat2 = (const Airport *) b;
+    if( lat1->latitude < lat2->latitude ) {
+        return -1;
+    } else if( lat1->latitude > lat2->latitude ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int cmpByLongitude(const void* a, const void* b) {
+    const Airport *lon1 = (const Airport *) a;
+    const  Airport *lon2 = (const Airport *) b;
+    if( lon1->longitude < lon2->longitude ) {
+        return -1;
+    } else if( lon1->longitude > lon2->longitude ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int cmpByType(const void* a, const void* b) {
+    const Airport *x = (const Airport *) a;
+    const Airport *y = (const Airport *) b;
+    int result = strcmp(x->type, y->type);
+
+    return result;
+}
+
+void generateReports(Airport *airports, int n) {
+    printf("\nOriginal :\n");
+    printAirports(airports, n);
+
+    printf("Sorted by GPS ID :\n");
+    qsort(airports, n, sizeof(Airport), cmpByGPSId);
+    printAirports(airports, n);
+
+    printf("Sorted by Type :\n");
+    qsort(airports, n, sizeof(Airport), cmpByType);
+    printAirports(airports, n);
+
+    printf("Sorted by Name :\n");
+    qsort(airports, n, sizeof(Airport), cmpByName);
+    printAirports(airports, n);
+
+    printf("Sorted by Name Descending :\n");
+    qsort(airports, n, sizeof(Airport), cmpByNameDesc);
+    printAirports(airports, n);
+
+
+
+    printf("Sorted by Latitude :\n");
+    qsort(airports, n, sizeof(Airport), cmpByLatitude);
+    printAirports(airports, n);
+
+    printf("Sorted by Longitude :\n");
+    qsort(airports, n, sizeof(Airport), cmpByLongitude);
+    printAirports(airports, n);
+
+    printf("Sorted by Country City :\n");
+    qsort(airports, n, sizeof(Airport), cmpByCountryCity);
+    printAirports(airports, n);
+
+    printf("Sorted by LincolnDistance :\n");
+    qsort(airports, n, sizeof(Airport), cmpByLincolnDistance);
+    printAirports(airports, n);
+
+    printf("Closest to Lincoln :\n");
+    int i = 0;
+    printOneAirport(airports, i);
+
+    printf("West-east median Search: \n");
+    qsort(airports, n, sizeof(Airport), cmpByLongitude);
+    i = (n / 2);
+    printOneAirport(airports, i);
+
+    printf("New York Airport Search :\n");
+    qsort(airports, n, sizeof(Airport), cmpByCountryCity);
+    Airport key = {  NULL, NULL, NULL, 0, 0, 0, "New York", "USA" };
+    Airport *needle = (Airport *) bsearch(&key, airports, n, sizeof(Airport), cmpByCountryCity);
+    if(needle == NULL) {
+        printf("New York Not Found\n");
+    } else {
+
+        printOneAirport(needle, 0);
+    }
+
+
+
+    printf("Large_airport Search: \n");
+    qsort(airports, n, sizeof(Airport), cmpByType);
+    Airport typeKey = {  NULL, "large_airport", NULL, 0, 0, 0, NULL, NULL };
+    Airport *needle1 = (Airport *) bsearch(&typeKey, airports, n, sizeof(Airport), cmpByType);
+    if(needle1 == NULL) {
+        printf("Type not found\n");
+    } else {
+
+        printOneAirport(needle1, 0);
+    }
+
+
+}

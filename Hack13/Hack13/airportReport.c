@@ -1,0 +1,31 @@
+#include <stdlib.h>
+
+#include <stdio.h>
+
+#include <string.h>
+
+#include "airport.h"
+
+//(airport#, gpsId, type, name, latitude, longitude, elevationFeet, city, countryAbbrv);
+int main(int argc, char ** argv) { //elevation 1219 Latitude: 40.8507 Longitude: -96.7555
+
+    Airport a1, a2, a3, a4, a5;
+    initAirport( & a1, "LNK", "small", "Lincoln Airport", 40.8507, -96.7555, 1219, "Lincoln", "USA");
+    initAirport( & a2, "ADS", "Medium", "Addison Airport", 32.9678, -96.8351, 644, "New York", "USA");
+    initAirport( & a3, "DCA", "large_airport", "Ronald Reagan Airport", 38.8512, -77.0402, 15.09,
+                 "Arlington", "USA");
+    initAirport( & a4, "LAX", "Gigantic", "Los Angeles International", 33.9416, -118.4085, 125, "Los Angeles", "USA");
+    initAirport( & a5, "HNL", "large_airport", "Honalulu International", 21.3069, -157.8583, 19.69, "Honalulu", "USA");
+
+    int n = 5;
+    Airport * airports = (Airport * ) malloc(sizeof(Airport) * n);
+    airports[0] = a1;
+    airports[1] = a2;
+    airports[2] = a3;
+    airports[3] = a4;
+    airports[4] = a5;
+
+    generateReports(airports, 5);
+
+    return 0;
+}

@@ -1,0 +1,232 @@
+#include <stdlib.h>
+
+#include <stdio.h>
+
+#include <string.h>
+
+#include <math.h>
+
+#include "transaction.h"
+
+void initTransaction(Transaction * transaction,
+                     char *UUID,
+                     char *type,
+                     double amount,
+                     char *accountNumber,
+                     double beforeBalance,
+                     double afterBalance,
+                     char *transferAccountNumber) {
+    transaction -> UUID = deepStringCopy(UUID);
+    transaction -> type = deepStringCopy(type);
+    transaction -> amount = amount;
+    transaction -> accountNumber = deepStringCopy(accountNumber);
+    transaction -> beforeBalance = beforeBalance;
+    transaction -> afterBalance = afterBalance;
+    transaction -> transferAccountNumber = deepStringCopy(transferAccountNumber);
+
+
+}
+
+
+
+char * deepStringCopy(const char * s) {
+    if (s == NULL) {
+
+    }
+    char * c = (char * ) malloc((strlen(s) + 1) * sizeof(char));
+    strcpy(c, s);
+    return c;
+}
+
+
+
+
+Transaction * loadFile(const char *fileName, int *numTransactions) {
+
+    FILE *f = fopen(fileName, "r");
+    if(f == NULL) {
+        return NULL;
+    }
+    char singleLine[200];
+    int n = atoi(fgets(singleLine, 200, f));
+    Transaction *transactions = (Transaction *) malloc(sizeof(Transaction)*n);
+    for(int i=0; i<n; i++) {
+        fgets(singleLine, 200, f);
+
+        singleLine[strlen(singleLine) - 1] = '\0';
+
+
+        char *UUID = strtok(singleLine, ",");
+
+        char *type = strtok(NULL, ",");
+
+        char *amountStr = strtok(NULL, ",");
+        double amount = atof(amountStr);
+
+        char *accountNumber = strtok(NULL, ",");
+
+        char *beforeBalanceStr = strtok(NULL, ",");
+        double beforeBalance = atof(beforeBalanceStr);
+
+        char *afterBalanceStr = strtok(NULL, ",");
+        double afterBalance = atof(afterBalanceStr);
+
+        char *transferAccountNumber = strtok(NULL, ",");
+
+        initTransaction(&transactions[i],
+                        UUID,
+                        type,
+                        amount,
+                        accountNumber,
+                        beforeBalance,
+                        afterBalance,
+                        transferAccountNumber);
+
+
+
+    }
+
+
+
+    *numTransactions = n;
+    fclose(f);
+    return transactions;
+}
+
+
+
+
+
+
+void printReport(int paymentCount, int transferCount, int withdrawCount, int debitCount, int depositCount,
+                 int totalCount, double totalPayment, double totalTransfer, double totalWithdraw,
+                 double totalDebit, double totalDeposit, double totalAmount) {
+    printf("=========================\n");
+    printf("Totals Report\n");
+    printf("=========================\n");
+    printf("Type     Count   Total\n");
+    printf("=========================\n");
+
+
+    printf("Payment   %d  $   %-9.2f\n", paymentCount, totalPayment);
+    printf("Transfer  %d  $   %-9.2f\n",transferCount, totalTransfer);
+    printf("Withdraw  %d  $   %-9.2f\n", withdrawCount, totalWithdraw);
+    printf("Debit     %d  $   %-9.2f\n", debitCount, totalDebit);
+    printf("Deposit   %d  $   %-9.2f\n", depositCount, totalDeposit);
+    printf("=========================\n");
+    printf("Total    %d  $   %-9.2f\n", totalCount, totalAmount);
+    printf("\n\n");
+    printf("=========================\n");
+    printf("Balance Validation Report\n");
+    printf("=========================\n");
+
+}
+
+void printValidationReport(const Transaction *transactions, int k, double invalidDifference) {
+
+    printf("Invalid Transaction, off by $%.2f:\n", invalidDifference);
+    printf("    %s:  %s  -> %s\n", transactions[k].UUID, transactions[k].accountNumber, transactions[k].transferAccountNumber);
+    printf("    ( %s) $ %.2f ($%f -> $%f\n", transactions[k].type, transactions[k].amount, transactions[k].beforeBalance, transactions[k].afterBalance);
+
+}
+
+void printDepositLimitReport(int depositApproaching, int depositExceeding) {
+    printf("=========================\n");
+    printf("Deposit Limit Report\n");
+    printf("=========================\n");
+    printf("Deposits exceeding 10k:%-2d\n", depositExceeding);
+    printf("Deposits approaching 10k:%-2d\n\n", depositApproaching);
+    printf("=========================\n");
+    printf("Repeated Tranaction Report\n");
+    printf("=========================\n");
+    printf("Repeated Transactions:\n");
+}
+
+void printRepeatedTransactions(const Transaction *transactions, int i) {
+    printf("    %s: %s -> %s\n", transactions[i].UUID, transactions[i].accountNumber, transactions[i].transferAccountNumber);
+    printf("    ( %s) $  %f ($%f -> $%f)\n", transactions[i].type, transactions[i].amount, transactions[i].beforeBalance, transactions[i].afterBalance);
+
+}
+
+
+int cmpByRepeatedTransaction(const void* a, const void* b) {
+    const Transaction  *x = (const Transaction *) a;
+    const Transaction *y = (const Transaction *) b;
+    int result = 0;
+    if( x->amount < y->amount ) {
+        result = -1;
+    } else if( x->amount > y->amount ) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    if(result == 0) {
+        result = strcmp(x->accountNumber, y->accountNumber);
+    }
+    if(result == 0) {
+        result = strcmp(x->transferAccountNumber, y->transferAccountNumber);
+    }
+    return result;
+
+}
+int cmpByUUID(const void* a, const void* b) {
+    const Transaction  *x = (const Transaction *) a;
+    const Transaction *y = (const Transaction *) b;
+
+    int result = strcmp(x->UUID, y->UUID);
+ return result;
+}
+
+
+void printBenfordAnalysis(int i, int benfordNumber, double exactFrequency,
+double expectedFrequency, double benfordDifference) {
+
+
+printf("%1d   %6d    %1f    %1f    %1f\n", i, benfordNumber, exactFrequency,
+expectedFrequency, benfordDifference);
+
+    i++;
+}
+
+int cmpByAll(const void* a, const void* b) {
+    const Transaction  *x = (const Transaction *) a;
+    const Transaction *y = (const Transaction *) b;
+
+    int result = 0;
+    if( x->amount < y->amount ) {
+        result = -1;
+    } else if( x->amount > y->amount ) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    if(result == 0) {
+        result = strcmp(x->accountNumber, y->accountNumber);
+    }
+    if(result == 0) {
+        result = strcmp(x->transferAccountNumber, y->transferAccountNumber);
+    }
+    if(result == 0 ) {
+        result = strcmp(x->UUID, y->UUID);
+    }
+    if(result == 0 ) {
+        result = strcmp(x->type, y->type);
+    }
+    if( x->beforeBalance < y->beforeBalance ) {
+        result = -1;
+    } else if( x->beforeBalance > y->beforeBalance ) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    if( x->afterBalance < y->afterBalance) {
+        result = -1;
+    } else if( x->afterBalance > y->afterBalance){
+        result = 1;
+    } else {
+        result = 0;
+    }
+    return result;
+
+
+}

@@ -1,0 +1,64 @@
+typedef struct {
+    char *UUID;
+    char *type;
+    double amount;
+    char *accountNumber;
+    double beforeBalance;
+    double afterBalance;
+    char *transferAccountNumber;
+} Transaction;
+
+
+/**
+ * creates a deep copy of a string
+ */
+char * deepStringCopy(const char * s);
+
+/**
+ * fills a structure with variables
+ */
+void initTransaction(Transaction * transaction,
+                     char *UUID,
+                     char *type,
+                     double amount,
+                     char *accountNumber,
+                     double beforeBalance,
+                     double afterBalance,
+                     char *transferAccountNumber);
+
+/**
+ * transfers strings to a bunch of variables
+ */
+Transaction stringToTransaction(char *buffer);
+
+
+//void printOneStructure(const Transaction singleTrans);
+
+
+/**
+ * prints out the report of totals and amounts
+ */
+void printReport(int paymentCount, int transferCount, int withdrawCount,int debitCount, int depositCount, int totalCount,
+                 double totalPayment, double totalTransfer, double totalWithdraw, double totalDebit, double totalDeposit,
+                 double totalAmount);
+
+
+
+void printValidationReport(const Transaction *transactions, int k, double invalidDifference);
+
+void printDepositLimitReport(int depositApproaching, int depositExceeding);
+
+void printRepeatedTransactions(const Transaction *transactions, int i);
+
+Transaction * loadFile(const char *fileName, int *numTransactions);
+
+int cmpByRepeatedTransaction(const void* a, const void* b);
+
+int cmpByAll(const void* a, const void* b);
+
+int cmpByUUID(const void* a, const void* b);
+
+void printBenfordAnalysis(int i, int benfordNumber, double exactFrequency,
+double expectedFrequency, double benfordDifference);
+
+

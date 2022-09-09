@@ -1,0 +1,83 @@
+/**
+ * Author: Luke Whipple and Colton Johnson
+ *         lwhipple9@huskers.unl.edu and cjohnson184@huskers.unl.edu
+ * Date: 2020/10/30
+ *
+ */
+ #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+#include "airport.h"
+
+
+ char *deepStringCopy(const char *s) {
+  char *c = (char *) malloc( (strlen(s)+1) * sizeof(char));
+  strcpy(c, s);
+  return c;
+}
+
+Airport* createAirport(const char* gpsId,
+                       const char* type,
+                       const char* name,
+                       double latitude,
+                       double longitude,
+                       int elevationFeet,
+                       const char* city,
+                       const char* countryAbbrv)
+{
+    Airport *airport = (Airport *) malloc(sizeof(Airport) * 1);
+  initBook(airport, gpsId, type, name, latitude, longitude, elevationFeet, city, countryAbbrv);
+  return airport;
+
+
+}
+
+void initAirport(Airport* airport,
+                 const char* gpsId,
+                 const char* type,
+                 const char* name,
+                 double latitude,
+                 double longitude,
+                 int elevationFeet,
+                 const char* city,
+                 const char* countryAbbrv)
+{
+  airport->gpsID = deepStringCopy(gpsID);
+  airport->type = deepStringCopy(type);
+  airport->name = deepStringCopy(name);
+  airport->latitude = latitude;
+  airport->longitude = longitude;
+  airport->elevationFeet = elevationFeet;
+  airport->city = deepStringCopy(city);
+  airport->countryAbbrv = deepStringCopy(countryAbbrv);
+  return;
+}
+
+char* airportToString(const Airport* airport) {
+char temp[9999];
+  sprintf(temp, "%s%s%s%f%f%d%s%s", airport->gpsID, airport->type, airport->name, airport->latitude,
+  airport->longitude, airport-> elevationFeet, airport->city, airport->countryAbbrv);
+  return deepStringCopy(temp);
+}
+
+double getAirDistance(const Airport* origin, const Airport* destination){
+
+double latOrg = origin -> latitude;
+double longOrg = origin -> longitude;
+
+double latDest = destination -> latitude;
+double longDest = destination -> longitude;
+
+
+  longOrg = (longOrg / 180) * M_PI;
+  latOrg = (latOrg /180) * M_PI;
+
+   longDest = (longDest / 180) * M_PI;
+   latDest = (latDest / 180) * M_PI;
+
+return (acos((sin(latOrg) * sin(latDest)) +
+cos(latOrg) * cos(latDest) * cos(longOrg - longDest)) * (EarthRadius))
+
+}

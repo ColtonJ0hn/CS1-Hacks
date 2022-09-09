@@ -1,0 +1,68 @@
+/**
+ * Author: Luke Whipple and Colton Johnson and David Dubchakov
+ *
+ * Date: 2020/11/6
+ *
+ * A program that uses memoization to calculate how many options you can pick from using Pascals rule
+ * Tests binomial.c
+ * 
+ *
+ */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+ 
+int main(int argc, char **argv) {
+    int n = atoi(argv[1]);
+    int k = atoi(argv[2]);
+
+    // long answer = choose( n, k);
+    // printf("%ld\n", answer);
+    // end = time(NULL);
+    // int time = (end - start);
+    // printf("Computation Time: %d seconds\n", time);
+
+
+    long **table = (long **) malloc(sizeof(long *) * (n + 1));
+
+    for(int i = 0; i <= n; i++){
+        table[i] = (long *) malloc(sizeof(long) * (k + 1));
+    }
+    for (int i = 0; i <= n; i++){
+        for (int j = 0; j <= k; j++){
+            table[i][j] = 0;
+            // printf("%ld\n", table[i][j]);
+            
+        }
+    }
+    table[0][0] = 1;
+    table[1][0] = 1;
+    table[1][1] = 1;
+    table[2][0] = 1;
+    table[2][1] = 2;
+    table[2][2] = 1;
+    table[3][0] = 1;
+    table[3][1] = 3;
+    table[3][2] = 3;
+    table[3][3] = 1;
+    table[4][0] = 1;
+    table[4][1] = 4;
+    table[4][2] = 6;
+    table[4][3] = 4;
+    table[4][4] = 1;
+    
+            
+  long long result = 0;
+  result = chooseMemoization(n, k , table);
+  //Printing all the table values
+//   for (int i = 0; i <= n; i++){
+//         for (int j = 0; j <= k; j++){
+//             printf("%ld\n", table[i][j]);
+//         }
+//   }
+  printf("%lld\n", result);
+
+return 0;
+}
